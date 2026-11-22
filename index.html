@@ -2,149 +2,196 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>丁半博打</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>丁半</title>
 <style>
-  * { box-sizing: border-box; user-select: none; touch-action: manipulation; }
-  body { background:#181412; color:#f5f5f4; text-align:center; font-family:serif; margin:0; padding:15px; overflow:hidden; transition:background 0.2s; }
-  .win-flash { background:#451a03 !important; }
-  .lose-shake { animation: shake 0.4s; background:#450a0a !important; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-12px)} 75%{transform:translateX(12px)} }
+  * { box-sizing:border-box; user-select:none; touch-action:manipulation; }
+  body { background:#181412; color:#f5f5f4; text-align:center; font-family:serif; margin:0; padding:16px; overflow:hidden; transition:background .2s; }
+  .win { background:#451a03 !important; }
+  .lose { animation:shake .4s; background:#450a0a !important; }
+  @keyframes shake { 25%{transform:translateX(-12px)} 75%{transform:translateX(12px)} }
 
-  .top-bar { display:flex; justify-content:space-between; background:#292524; padding:10px 15px; border-radius:8px; border:1px solid #78350f; font-size:15px; }
+  .bar { display:flex; justify-content:space-between; align-items:center; background:#292524; padding:10px 15px; border:1px solid #78350f; font-size:15px; }
   .gold { color:#fbbf24; font-weight:bold; font-size:18px; }
-  .rank { display:inline-block; background:#b45309; color:#fff; padding:3px 10px; border-radius:4px; font-size:13px; margin-top:10px; }
+  .rank { background:#b45309; padding:3px 10px; font-size:13px; }
 
-  /* 3Dサイコロ */
-  .stage { display:flex; justify-content:center; gap:40px; margin:32px 0; perspective:600px; }
-  .cube { width:64px; height:64px; position:relative; transform-style:preserve-3d; transition:transform 0.75s cubic-bezier(0.15, 0.9, 0.3, 1.15); }
-  .face { position:absolute; width:64px; height:64px; background:#fafaf9; color:#1c1917; border:2px solid #d6d3d1; border-radius:10px; font-size:32px; font-weight:bold; display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 12px rgba(0,0,0,0.2); }
-  .f1 { transform:rotateY(0deg) translateZ(32px); color:#dc2626; font-size:38px; }
+  .hist { display:flex; align-items:center; gap:5px; max-width:400px; margin:10px auto 0; min-height:24px; font-size:12px; color:#a8a29e; }
+  .badge { width:22px; height:22px; line-height:22px; font-weight:bold; color:#fff; flex-shrink:0; }
+  .cho { background:#dc2626; }
+  .han { background:#2563eb; }
+
+  .stage { display:flex; justify-content:center; gap:44px; margin:28px 0; perspective:600px; }
+  .cube { width:64px; height:64px; position:relative; transform-style:preserve-3d; transition:transform .75s cubic-bezier(.15,.9,.3,1.15); }
+  .face { position:absolute; inset:0; background:#fafaf9; border:1px solid #a8a29e; box-shadow:inset 0 0 12px rgba(0,0,0,.25); backface-visibility:hidden; display:grid; grid-template:repeat(3,1fr)/repeat(3,1fr); padding:8px; place-items:center; }
+  .dot { width:11px; height:11px; border-radius:50%; background:#1c1917; }
+  .f1 .dot { width:20px; height:20px; background:#dc2626; }
+  .f1 { transform:rotateY(0deg) translateZ(32px); }
   .f2 { transform:rotateY(90deg) translateZ(32px); }
   .f3 { transform:rotateX(90deg) translateZ(32px); }
   .f4 { transform:rotateX(-90deg) translateZ(32px); }
   .f5 { transform:rotateY(-90deg) translateZ(32px); }
   .f6 { transform:rotateY(180deg) translateZ(32px); }
 
-  #msg { font-size:18px; min-height:54px; line-height:1.4; margin:10px 0; }
-  .bet-select { display:flex; justify-content:center; gap:10px; margin-bottom:14px; }
-  .bet-btn { background:#292524; color:#d6d3d1; border:1px solid #57534e; padding:8px 16px; border-radius:6px; font-size:14px; cursor:pointer; }
-  .bet-btn.active { background:#b45309; color:#fff; border-color:#fbbf24; font-weight:bold; }
+  #msg { font-size:17px; min-height:48px; line-height:1.4; margin:10px 0; }
 
-  .play-btns { display:flex; gap:12px; max-width:400px; margin:0 auto; }
-  .p-btn { flex:1; font-size:22px; font-weight:bold; padding:18px 0; border:none; border-radius:10px; color:#fff; box-shadow:0 4px 0 rgba(0,0,0,0.5); cursor:pointer; }
+  .bet-box { max-width:400px; margin:0 auto 14px; background:#292524; padding:10px 12px; border:1px solid #44403c; }
+  .bet-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:15px; }
+  .presets { display:flex; gap:6px; }
+  .presets button { font:13px serif; padding:4px 8px; background:#44403c; color:#f5f5f4; border:1px solid #78716c; cursor:pointer; }
+  input[type=range] { width:100%; accent-color:#fbbf24; cursor:pointer; }
+
+  .btns { display:flex; gap:12px; max-width:400px; margin:0 auto; }
+  .p-btn { flex:1; font:bold 22px serif; padding:16px 0; border:none; color:#fff; box-shadow:0 4px 0 rgba(0,0,0,.5); cursor:pointer; }
   .p-btn:active { transform:translateY(3px); box-shadow:none; }
-  .p-btn:disabled { opacity:0.4; }
-  
-  #share { margin-top:18px; background:#000; color:#fff; border:1px solid #57534e; padding:10px 22px; border-radius:20px; font-size:14px; text-decoration:none; display:none; }
+  button:disabled, input:disabled { opacity:.4; pointer-events:none; }
+
+  #result { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); align-items:center; justify-content:center; padding:16px; z-index:10; }
+  .modal { background:#292524; border:2px solid #b45309; padding:24px 20px; width:100%; max-width:340px; }
+  .modal h2 { color:#f87171; margin:0 0 16px; font-size:24px; }
+  .stat { background:#1c1917; padding:12px; margin-bottom:18px; line-height:1.9; font-size:15px; border:1px solid #44403c; }
+  .retry { width:100%; font:bold 18px serif; padding:14px; background:#b45309; color:#fff; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
-  <div class="top-bar">
+  <div class="bar">
     <div>所持金：<span id="money" class="gold">1,000</span>両</div>
-    <div>連勝：<span id="streak" class="gold">0</span>回</div>
+    <div class="rank" id="rank">称号：見習い博徒</div>
   </div>
-  <div class="rank" id="rank">称号：見習い博徒</div>
 
-  <div class="stage">
-    <div id="c1" class="cube">
-      <div class="face f1">●</div><div class="face f2">二</div><div class="face f3">三</div>
-      <div class="face f4">四</div><div class="face f5">五</div><div class="face f6">六</div>
+  <div class="hist" id="hist">履歴：なし</div>
+  <div class="stage" id="stage"></div>
+  <div id="msg">掛け金を決めて「丁」か「半」に張れ！</div>
+
+  <div class="bet-box">
+    <div class="bet-row">
+      <span>掛け金：<b id="betVal" class="gold">1,000</b>両</span>
+      <div class="presets">
+        <button type="button" onclick="setBet(100)">100両</button>
+        <button type="button" onclick="setBet(Math.floor(money/2))">半分</button>
+        <button type="button" onclick="setBet(money)">全額</button>
+      </div>
     </div>
-    <div id="c2" class="cube">
-      <div class="face f1">●</div><div class="face f2">二</div><div class="face f3">三</div>
-      <div class="face f4">四</div><div class="face f5">五</div><div class="face f6">六</div>
+    <input type="range" id="betRange" min="100" max="1000" step="100" value="1000" oninput="setBet(this.value)">
+  </div>
+
+  <div class="btns">
+    <button class="p-btn" onclick="play('丁')" style="background:#dc2626">丁（偶数）</button>
+    <button class="p-btn" onclick="play('半')" style="background:#2563eb">半（奇数）</button>
+  </div>
+
+  <div id="result">
+    <div class="modal">
+      <h2>破産… 勝負あり</h2>
+      <div class="stat">
+        <div>最高所持金額：<b id="resMax" class="gold">1,000</b>両</div>
+        <div>最高到達称号：<b id="resRank">見習い博徒</b></div>
+        <div>勝負回数：<b id="resCount">0</b>回</div>
+      </div>
+      <button type="button" class="retry" onclick="resetGame()">もう一度遊ぶ（1,000両）</button>
     </div>
   </div>
-
-  <div id="msg">賭け方を選んで「丁」か「半」に張れ！</div>
-
-  <div class="bet-select">
-    <button class="bet-btn" id="mHalf" onclick="setMode('half')">堅実に半額賭け</button>
-    <button class="bet-btn active" id="mAll" onclick="setMode('all')">🔥 全額勝負（倍プッシュ）</button>
-  </div>
-
-  <div class="play-btns">
-    <button id="b1" class="p-btn" onclick="play('丁')" style="background:#dc2626;">丁（偶数）</button>
-    <button id="b2" class="p-btn" onclick="play('半')" style="background:#2563eb;">半（奇数）</button>
-  </div>
-  
-  <a id="share" href="#" target="_blank" rel="noopener noreferrer">𝕏 この戦績をポストする</a>
 
   <script>
-    let money = 1000, streak = 0, maxMoney = 1000, spin = 0, mode = 'all';
-    const rot = { 1:[0,0], 2:[0,-90], 3:[-90,0], 4:[90,0], 5:[0,90], 6:[0,180] };
-    const ranks = ['見習い博徒', '街の勝負師', '鉄火場の常連', '凄腕の壺振り', '伝説の胴元', '博打の神'];
-    let ctx = null;
+    const $ = id => document.getElementById(id);
+    const pips = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+    const rot = { 1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 6: [0, 180] };
+    const ranks = [[0, '見習い博徒'], [3000, '街の勝負師'], [10000, '鉄火場の常連'], [50000, '凄腕の壺振り'], [200000, '伝説の胴元'], [1000000, '博打の神']];
+    let money = 1000, bet = 1000, maxMoney = 1000, count = 0, history = [], spin = 0, ctx;
 
-    function beep(freq, type, dur, delay=0) {
-      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === 'suspended') ctx.resume();
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type; o.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-      g.gain.setValueAtTime(0.15, ctx.currentTime + delay);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(ctx.currentTime + delay); o.stop(ctx.currentTime + delay + dur);
+    $('stage').innerHTML = [1, 2].map(n =>
+      `<div id="c${n}" class="cube">${pips.map((p, i) =>
+        `<div class="face f${i + 1}">${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(g => p.includes(g) ? '<span class="dot"></span>' : '<span></span>').join('')}</div>`
+      ).join('')}</div>`
+    ).join('');
+
+    const getRank = m => [...ranks].reverse().find(([min]) => m >= min)[1];
+
+    function setBet(v) {
+      bet = Math.max(100, Math.min(money, Math.floor(v / 100) * 100 || 100));
+      $('betRange').max = Math.max(100, money);
+      $('betRange').value = bet;
+      $('betVal').textContent = bet.toLocaleString();
     }
 
-    function setMode(m) {
-      mode = m;
-      mHalf.className = 'bet-btn' + (m === 'half' ? ' active' : '');
-      mAll.className = 'bet-btn' + (m === 'all' ? ' active' : '');
+    function updateUI() {
+      $('money').textContent = money.toLocaleString();
+      $('rank').textContent = `称号：${getRank(money)}`;
+      $('hist').innerHTML = history.length
+        ? '履歴：' + history.map(r => `<span class="badge ${r === '丁' ? 'cho' : 'han'}">${r}</span>`).join('')
+        : '履歴：なし';
+      setBet(Math.min(bet, money));
     }
+
+    const beep = (freq, type, dur, delay = 0) => {
+      try {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+        const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + delay;
+        o.type = type;
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(.15, t);
+        g.gain.exponentialRampToValueAtTime(.001, t + dur);
+        o.connect(g).connect(ctx.destination);
+        o.start(t);
+        o.stop(t + dur);
+      } catch {}
+    };
 
     function play(choice) {
-      b1.disabled = b2.disabled = true;
+      const controls = document.querySelectorAll('.p-btn, .presets button, input');
+      controls.forEach(el => el.disabled = true);
       document.body.className = '';
-      
-      const bet = mode === 'all' ? money : Math.max(100, Math.floor(money / 2));
-      msg.textContent = `${bet.toLocaleString()}両を賭けた… 入ります！`;
-      
-      [0, 0.1, 0.2, 0.35, 0.5].forEach((t, i) => beep(600 + i*80, 'triangle', 0.08, t));
+
+      const wager = bet;
+      $('msg').textContent = `${wager.toLocaleString()}両を賭けた… 入ります！`;
+      [0, .1, .2, .35, .5].forEach((t, i) => beep(600 + i * 80, 'triangle', .08, t));
 
       spin += 720;
       const d1 = Math.ceil(Math.random() * 6), d2 = Math.ceil(Math.random() * 6);
-      c1.style.transform = `rotateX(${rot[d1][0] + spin}deg) rotateY(${rot[d1][1] + spin}deg)`;
-      c2.style.transform = `rotateX(${rot[d2][0] - spin}deg) rotateY(${rot[d2][1] + spin}deg)`;
+      $('c1').style.transform = `rotateX(${rot[d1][0] + spin}deg) rotateY(${rot[d1][1] + spin}deg)`;
+      $('c2').style.transform = `rotateX(${rot[d2][0] - spin}deg) rotateY(${rot[d2][1] + spin}deg)`;
 
       setTimeout(() => {
         const res = (d1 + d2) % 2 === 0 ? '丁' : '半';
-        const isPinzoro = (d1 === 1 && d2 === 1);
+        count++;
+        history.push(res);
+        if (history.length > 12) history.shift();
 
         if (choice === res) {
-          const bonus = isPinzoro ? bet * 3 : bet;
-          money += bonus; streak++;
-          if (money > maxMoney) maxMoney = money;
-          document.body.className = 'win-flash';
-          if (navigator.vibrate) navigator.vibrate([50, 40, 80]);
-          [523, 659, 784, 1046].forEach((f, i) => beep(f, 'sine', 0.25, i*0.07));
-          msg.innerHTML = `<span style="color:#fbbf24; font-weight:bold;">${isPinzoro ? '🔥ピンゾロ（3倍）！' : ''}${d1}と${d2}で【${res}】！当たり！</span><br>+${bonus.toLocaleString()}両 獲得！`;
+          money += wager;
+          maxMoney = Math.max(maxMoney, money);
+          document.body.className = 'win';
+          navigator.vibrate?.([50, 40, 80]);
+          [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => beep(f, 'sine', .25, i * .07));
+          $('msg').innerHTML = `<b style="color:#fbbf24">${d1}と${d2}で【${res}】！当たり！</b><br>+${wager.toLocaleString()}両 獲得！`;
         } else {
-          money -= bet; streak = 0;
-          document.body.className = 'lose-shake';
-          if (navigator.vibrate) navigator.vibrate(250);
-          beep(140, 'sawtooth', 0.5);
-          if (money <= 0) {
-            msg.innerHTML = `<span style="color:#f87171;">${d1}と${d2}で【${res}】… 破産！</span><br>借金1,000両で再スタート…`;
-            money = 1000;
-          } else {
-            msg.innerHTML = `<span style="color:#f87171;">${d1}と${d2}で【${res}】… ハズレ！</span><br>${bet.toLocaleString()}両を失った…`;
-          }
+          money -= wager;
+          document.body.className = 'lose';
+          navigator.vibrate?.(250);
+          beep(140, 'sawtooth', .5);
+          $('msg').innerHTML = `<span style="color:#f87171">${d1}と${d2}で【${res}】… 外れ！</span><br>-${wager.toLocaleString()}両 失った…`;
         }
 
-        document.getElementById('money').textContent = money.toLocaleString();
-        document.getElementById('streak').textContent = streak;
-        const currentRank = ranks[Math.min(streak, ranks.length - 1)];
-        rank.textContent = '称号：' + currentRank;
-        
-        // X投稿リンクの更新
-        const postText = `【丁半博打】最高所持金 ${maxMoney.toLocaleString()}両（現在 ${streak}連勝 / ${currentRank}）達成！\n#丁半博打 #ブラウザゲーム`;
-        share.href = `https://x.com{encodeURIComponent(postText)}`;
-        share.style.display = 'inline-block';
+        updateUI();
+        controls.forEach(el => el.disabled = false);
 
-        b1.disabled = b2.disabled = false;
+        if (money <= 0) {
+          $('resMax').textContent = maxMoney.toLocaleString();
+          $('resRank').textContent = getRank(maxMoney);
+          $('resCount').textContent = count;
+          $('result').style.display = 'flex';
+        }
       }, 750);
+    }
+
+    function resetGame() {
+      money = bet = maxMoney = 1000;
+      count = 0;
+      history = [];
+      document.body.className = '';
+      $('msg').textContent = '掛け金を決めて「丁」か「半」に張れ！';
+      $('result').style.display = 'none';
+      updateUI();
     }
   </script>
 </body>
